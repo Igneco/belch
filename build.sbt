@@ -11,9 +11,9 @@ scalaVersion:= "2.11.7"
 
 //crossScalaVersions := Seq("2.10.4"/*, "2.11.0"*/)
 
-resolvers ++= Seq(
-  "Sonatype OSS Releases" at "http://oss.sonatype.org/content/repositories/releases/"
-)
+//resolvers ++= Seq(
+//  "Sonatype OSS Releases" at "http://oss.sonatype.org/content/repositories/releases/"
+//)
 
 libraryDependencies ++= Seq(
   "net.liftweb" %% "lift-webkit" % "[2.6.1,2.7.0]" % "provided",
