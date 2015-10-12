@@ -29,28 +29,25 @@ libraryDependencies ++= Seq(
 
 //net.virtualvoid.sbt.graph.Plugin.graphSettings
 
-//TIP: for lib publishing ... start uncommenting from here
-//sonatypeSettings
+sonatypeSettings
 
-//publishTo <<= version { project_version ⇒
-//  val nexus = "https://oss.sonatype.org/"
-//  if (project_version.trim.endsWith("SNAPSHOT"))
-//    Some("snapshots" at nexus + "content/repositories/snapshots")
-//  else
-//    Some("releases" at nexus + "service/local/staging/deploy/maven2")
-//}
+publishTo <<= version { project_version ⇒
+  val nexus = "https://oss.sonatype.org/"
+  if (project_version.trim.endsWith("SNAPSHOT"))
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  else
+    Some("releases" at nexus + "service/local/staging/deploy/maven2")
+}
 
-//publishMavenStyle := true
+publishMavenStyle := true
 
-//publishArtifact in Test := false
-//TIP: for lib publishing ... finish uncommenting here
+publishArtifact in Test := false
 
 homepage := Some(url("https://github.com/alltonp/belch"))
 
 licenses +=("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))
 
-//TIP: for lib publishing ... uncommenting this too
-//credentials += Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", System.getenv("SONATYPE_USER"), System.getenv("SONATYPE_PASSWORD"))
+credentials += Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", System.getenv("SONATYPE_USER"), System.getenv("SONATYPE_PASSWORD"))
 
 pomExtra :=
     <scm>
