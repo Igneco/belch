@@ -10,12 +10,12 @@ import Html._
 
 //TODO: (later) make messagesToElm port be optional
 //TODO: (later) support multiple ports (in each direction)
-case class Belch(divId: String, module: String,
+case class Belch(divId: String, elmModule: String,
                  fromElmPort: Option[FromElmPort] = None,
                  toElmPort: ToElmPort = ToElmPort(),
                  debug: Boolean = false) extends Renderable {
 
-  private val embedVar = s"${divId}_$module".replaceAll("-", "_").replaceAll("\\.", "_")
+  private val embedVar = s"_${divId}".replaceAll("-", "_").replaceAll("\\.", "_")
   private val embedCallbackMethod = s"${embedVar}_callback" //TODO: ultimately should include the fromElmPort.name
   private val description = s"toElm: [${toElmPort.name}], fromElm: [${fromElmPort.fold("N/A")(_.name)}]"
 
@@ -39,7 +39,7 @@ case class Belch(divId: String, module: String,
     function log(message) { if ($debug) console.log('BELCH: $embedVar -> ' + message); }
     log('$description');
 
-    var ${embedVar} = Elm.$module.embed(document.getElementById('$divId'));
+    var ${embedVar} = Elm.$elmModule.embed(document.getElementById('$divId'));
     ${messagesFromElmSubscriber(fromElmPort)}
     """
     }</script>
