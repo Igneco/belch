@@ -8,8 +8,6 @@ import net.liftweb.http.js.JsCmds.{Function, Script, _}
 import net.liftweb.http.js.{JE, JsCmd}
 import Html._
 
-//TODO: (later) make messagesToElm port be optional
-//TODO: (later) support multiple ports (in each direction)
 //TIP: BasicElmLiftCometHelper
 case class Belch(divId: String, elmModule: String,
                  fromElmPort: Option[FromElmPort] = None,
