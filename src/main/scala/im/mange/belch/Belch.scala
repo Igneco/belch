@@ -10,26 +10,26 @@ import Html._
 
 //TODO: (later) make messagesToElm port be optional
 //TODO: (later) support multiple ports (in each direction)
-//TIP: BasicElmLiftwebCometHelper
+//TIP: BasicElmLiftCometHelper
 case class Belch(divId: String, elmModule: String,
                  fromElmPort: Option[FromElmPort] = None,
-                 toElmPort: ToElmPort = ToElmPort(),
+                 fromLiftPort: FromLiftPort = FromLiftPort(),
                  debug: Boolean = false) extends Renderable {
 
   private val embedVar = s"_${divId}".replaceAll("-", "_").replaceAll("\\.", "_")
   private val embedCallbackMethod = s"${embedVar}_callback" //TODO: ultimately should include the fromElmPort.name
-  private val description = s"toElm: [${toElmPort.fqn(divId)}], fromElm: [${fromElmPort.fold("N/A")(_.name)}]"
+  private val description = s"fromLiftPort: [${fromLiftPort.fqn(divId)}], fromElm: [${fromElmPort.fold("N/A")(_.name)}]"
 
   if (debug) log(description)
   if (debug) log("\n" + generateBridge.toString())
 
   override def render = R(renderBridge, renderCallback).render
 
-  def sendMessageFromLiftToElm(portMessage: PortMessage): JsCmd = {
+  def sendToElm(portMessage: PortMessage): JsCmd = {
     val portMessageJson = toJson(portMessage)
-    if (debug) log(s"sendMessageFromLiftToElm ${toElmPort.fqn(divId)}: ${portMessage.typeName} -> ${portMessage.payload} = $portMessageJson")
+    if (debug) log(s"sendToElm ${fromLiftPort.fqn(divId)}: ${portMessage.typeName} -> ${portMessage.payload} = $portMessageJson")
 
-    JsRaw(s"$embedVar.ports.${toElmPort.fqn(divId)}.send(" + portMessageJson + ");")
+    JsRaw(s"$embedVar.ports.${fromLiftPort.fqn(divId)}.send(" + portMessageJson + ");")
   }
 
   private def renderBridge = div(Some(divId), R(generateBridge))
@@ -41,11 +41,11 @@ s"""
     log('$description');
 
     var ${embedVar} = Elm.$elmModule.embed(document.getElementById('$divId'));
-    ${messagesFromElmSubscriber(fromElmPort)}
+    ${receiveFromElmSubscriber(fromElmPort)}
 """
     }</script>
 
-  private def messagesFromElmSubscriber(maybeFromElmPort: Option[FromElmPort]) = maybeFromElmPort match {
+  private def receiveFromElmSubscriber(maybeFromElmPort: Option[FromElmPort]) = maybeFromElmPort match {
     case Some(port) =>
 s"""
     $embedVar.ports.${port.name}.subscribe(function(model) {
