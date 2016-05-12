@@ -17,18 +17,18 @@ case class Belch(divId: String, elmModule: String,
 
   private val embedVar = s"_${divId}".replaceAll("-", "_").replaceAll("\\.", "_")
   private val embedCallbackMethod = s"${embedVar}_callback" //TODO: ultimately should include the fromElmPort.name
-  private val description = s"toElm: [${toElmPort.name}], fromElm: [${fromElmPort.fold("N/A")(_.name)}]"
+  private val description = s"toElm: [${toElmPort.fqn(divId)}], fromElm: [${fromElmPort.fold("N/A")(_.name)}]"
 
   if (debug) log(description)
   if (debug) log("\n" + generateBridge.toString())
 
   override def render = R(renderBridge, renderCallback).render
 
-  def sendMessageToElm(portMessage: PortMessage): JsCmd = {
+  def sendMessageFromLiftToElm(portMessage: PortMessage): JsCmd = {
     val portMessageJson = toJson(portMessage)
-    if (debug) log(s"sendMessageToElm ${toElmPort.name}: ${portMessage.typeName} -> ${portMessage.payload} = $portMessageJson")
+    if (debug) log(s"sendMessageFromLiftToElm ${toElmPort.fqn(divId)}: ${portMessage.typeName} -> ${portMessage.payload} = $portMessageJson")
 
-    JsRaw(s"$embedVar.ports.${toElmPort.name}.send(" + portMessageJson + ");")
+    JsRaw(s"$embedVar.ports.${toElmPort.fqn(divId)}.send(" + portMessageJson + ");")
   }
 
   private def renderBridge = div(Some(divId), R(generateBridge))
