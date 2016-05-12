@@ -59,9 +59,7 @@ s"""
     case Some(port) =>
 s"""
     $embedVar.ports.${port.fqn(divId)}.subscribe(function(model) {
-      log('sendToLift: ' + model['typeName']);
-      //log('sendToLift: ' + model);
-      //log('sendToLift: ');
+      log('sendToLift: ' + model['typeName'] + ' -> ' + model['payload'] );
       var portMessage = JSON.stringify(model);
       $embedCallbackMethod(portMessage);
     });"""
