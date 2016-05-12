@@ -26,12 +26,12 @@ case class Belch(divId: String, elmModule: String,
   //TODO: should have error handling around toJson
   def sendToElm(portMessage: PortMessage): JsCmd = {
     val json = toJson(portMessage)
-    if (debug) log(s"sendToElm: " + describe(portMessage, json))
+    if (debug) log(s"sendToElm: " + describe(portMessage))
 
     JsRaw(s"$embedVar.ports.${fromLiftPort.fqn(divId)}.send(" + json + ");")
   }
 
-  private def describe(portMessage: PortMessage, portMessageJson: String) =
+  private def describe(portMessage: PortMessage) =
     s"${portMessage.typeName} -> ${portMessage.payload}"
 
   private def renderBridge = div(Some(divId), R(generateBridge))
@@ -67,7 +67,7 @@ s"""
   private def receiveFromElmCallback(toLiftPort: ToLiftPort) = Function(embedCallbackMethod, List("portMessage"),
     SHtml.ajaxCall(JE.JsRaw("""portMessage"""), (json: String) => {
       val portMessage = fromJson(json)
-      if (debug) log(s"receiveFromElm: " + describe(portMessage, json))
+      if (debug) log(s"receiveFromElm: " + describe(portMessage))
       toLiftPort.receiveFromElm(portMessage)
       Js.nothing
     } )._2.cmd
