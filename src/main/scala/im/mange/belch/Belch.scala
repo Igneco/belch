@@ -28,6 +28,7 @@ case class Belch(divId: String, elmModule: String,
     val json = toJson(portMessage)
     if (debug) log(s"sendToElm: " + describe(portMessage))
 
+    //TODO: should probably escape any ' that might occur in the log message ..
     JsRaw(
       s"""
          log('receiveFromLift: ');
@@ -56,8 +57,9 @@ s"""
     case Some(port) =>
 s"""
     $embedVar.ports.${port.fqn(divId)}.subscribe(function(model) {
-      log('sendToLift: ' + model);
-      //log('sendToLift: ');
+      //log('sendToLift: ' + model['typeName']);
+      //log('sendToLift: ' + model);
+      log('sendToLift: ');
       var portMessage = JSON.stringify(model);
       $embedCallbackMethod(portMessage);
     });"""
