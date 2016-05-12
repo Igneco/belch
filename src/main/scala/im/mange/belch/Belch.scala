@@ -47,11 +47,11 @@ s"""
     log('$description');
 
     var ${embedVar} = Elm.$elmModule.embed(document.getElementById('$divId'));
-    ${receiveFromElmSubscriber(toLiftPort)}
+    ${sendToLiftSubscriber(toLiftPort)}
 """
     }</script>
 
-  private def receiveFromElmSubscriber(maybeToLiftPort: Option[ToLiftPort]) = maybeToLiftPort match {
+  private def sendToLiftSubscriber(maybeToLiftPort: Option[ToLiftPort]) = maybeToLiftPort match {
     case Some(port) =>
 s"""
     $embedVar.ports.${port.fqn(divId)}.subscribe(function(model) {
