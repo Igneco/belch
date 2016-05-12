@@ -31,6 +31,7 @@ case class Belch(divId: String, elmModule: String,
     //TODO: should probably escape any ' that might occur in the log message ..
     JsRaw(
       s"""
+         ${if (debug) Seq(loggerFunction, "log('receiveFromLift: ');").mkString("\n")}
          //log('receiveFromLift: ');
          //log('receiveFromLift: ${portMessage.typeName} -> ${portMessage.payload}');
          $embedVar.ports.${fromLiftPort.fqn(divId)}.send($json);
@@ -45,13 +46,15 @@ case class Belch(divId: String, elmModule: String,
   private def generateBridge =
     <script type="text/javascript">{
 s"""
-    function log(message) { if ($debug) console.log('BELCH: [$divId] ' + message); }
+    ${loggerFunction}
     log('$description');
 
     var ${embedVar} = Elm.$elmModule.embed(document.getElementById('$divId'));
     ${sendToLiftSubscriber(toLiftPort)}
 """
     }</script>
+
+  private def loggerFunction = s"""function log(message) { if ($debug) console.log('BELCH: [$divId] ' + message); }"""
 
   private def sendToLiftSubscriber(maybeToLiftPort: Option[ToLiftPort]) = maybeToLiftPort match {
     case Some(port) =>
