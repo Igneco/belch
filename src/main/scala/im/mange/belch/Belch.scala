@@ -28,7 +28,11 @@ case class Belch(divId: String, elmModule: String,
     val json = toJson(portMessage)
     if (debug) log(s"sendToElm: " + describe(portMessage))
 
-    JsRaw(s"$embedVar.ports.${fromLiftPort.fqn(divId)}.send(" + json + ");")
+    JsRaw(
+      s"""
+         $embedVar.ports.${fromLiftPort.fqn(divId)}.send(" + json + ");
+         log('receiveFromLift');
+        """)
   }
 
   private def describe(portMessage: PortMessage) =
