@@ -20,6 +20,7 @@ case class Belch(divId: String, module: String,
   private val description = s"toElm: [${toElmPort.name}], fromElm: [${fromElmPort.fold("N/A")(_.name)}]"
 
   if (debug) log(description)
+  if (debug) log(generateBridge.toString())
 
   override def render = R(renderBridge, renderCallback).render
 
@@ -30,19 +31,19 @@ case class Belch(divId: String, module: String,
     JsRaw(s"$embedVar.ports.${toElmPort.name}.send(" + portMessageJson + ");")
   }
 
-  private def renderBridge = div(Some(divId), R(
+  private def renderBridge = div(Some(divId), R(generateBridge))
+
+  private def generateBridge =
     <script type="text/javascript">
       {s"""
         function log(message) { if ($debug) console.log('BELCH: $embedVar -> ' + message); }
         log('$description');
 
-        var ${embedVar} = Elm.embed($module, document.getElementById('$divId'), {
-          ${toElmPort.name}: ${toJson(toElmPort.initialValue)}
-        });
+        var ${embedVar} = Elm.$module.embed(document.getElementById('$divId'));
 
         ${messagesFromElmSubscriber(fromElmPort)}
         """}
-    </script>))
+    </script>
 
   private def messagesFromElmSubscriber(maybeFromElmPort: Option[FromElmPort]) = maybeFromElmPort match {
     case Some(port) => s"""
