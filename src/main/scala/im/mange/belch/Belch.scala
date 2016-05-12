@@ -12,22 +12,23 @@ import Html._
 case class Belch(divId: String, elmModule: String,
                  toLiftPort: Option[ToLiftPort] = None,
                  fromLiftPort: FromLiftPort = FromLiftPort(),
-                 debug: Boolean = false) extends Renderable {
+                 messageDebug: Boolean = false,
+                 bridgeDebug: Boolean = false) extends Renderable {
 
   private val embedVar = s"_${divId}".replaceAll("-", "_").replaceAll("\\.", "_")
   private val embedCallbackMethod = s"${embedVar}Callback"
   private val description = s"created with fromLiftPort: ${fromLiftPort.fqn(divId)}, toLiftPort: ${toLiftPort.fold("N/A")(_.fqn(divId))}"
 
-  if (debug) log(description)
-  if (debug) log("main:\n\n" + generateMain.toString + "\n")
-  if (debug) log("callback:\n" + generateCallback(PortMessage("typeName", "payload"), "json"))
+  if (bridgeDebug) log(description)
+  if (bridgeDebug) log("main:\n\n" + generateMain.toString + "\n")
+  if (bridgeDebug) log("callback:\n" + generateCallback(PortMessage("typeName", "payload"), "json"))
 
   override def render = R(renderBridge, renderCallback).render
 
   //TODO: should have error handling around toJson
   def sendToElm(portMessage: PortMessage): JsCmd = {
     val json = toJson(portMessage)
-    if (debug) log(s"sendToElm: " + describe(portMessage))
+    if (messageDebug) log(s"sendToElm: " + describe(portMessage))
 
     //TODO: should probably escape any ' that might occur in the log message ..
     JsRaw(generateCallback(portMessage, json))
@@ -35,7 +36,7 @@ case class Belch(divId: String, elmModule: String,
 
   private def generateCallback(portMessage: PortMessage, json: String) =
 s"""
-    ${if (debug) Seq(generateLogger, s"    log('receiveFromLift: ${portMessage.typeName} -> ${portMessage.payload}');").mkString("\n")}
+    ${if (messageDebug) Seq(generateLogger, s"    log('receiveFromLift: ${portMessage.typeName} -> ${portMessage.payload}');").mkString("\n")}
     $embedVar.ports.${fromLiftPort.fqn(divId)}.send($json);
 """
 
@@ -47,21 +48,21 @@ s"""
   private def generateMain =
     <script type="text/javascript">{
 s"""
-    ${if (debug) generateLogger}
-    ${if (debug) "log('$description');"}
+    ${if (messageDebug) generateLogger}
+    ${if (messageDebug) "log('$description');"}
 
     var ${embedVar} = Elm.$elmModule.embed(document.getElementById('$divId'));
     ${sendToLiftSubscriber(toLiftPort)}
 """
     }</script>
 
-  private def generateLogger = s"""function log(message) { if ($debug) console.log('BELCH: [$divId] ' + JSON.parse(JSON.stringify(String(message)))); }"""
+  private def generateLogger = s"""function log(message) { if ($messageDebug) console.log('BELCH: [$divId] ' + JSON.parse(JSON.stringify(String(message)))); }"""
 
   private def sendToLiftSubscriber(maybeToLiftPort: Option[ToLiftPort]) = maybeToLiftPort match {
     case Some(port) =>
 s"""
     $embedVar.ports.${port.fqn(divId)}.subscribe(function(model) {
-      ${if (debug) "log('sendToLift: ' + model['typeName'] + ' -> ' + model['payload'] );"}
+      ${if (messageDebug) "log('sendToLift: ' + model['typeName'] + ' -> ' + model['payload'] );"}
       var portMessage = JSON.stringify(model);
       $embedCallbackMethod(portMessage);
     });"""
@@ -77,14 +78,14 @@ s"""
   private def receiveFromElmCallback(toLiftPort: ToLiftPort) = Function(embedCallbackMethod, List("portMessage"),
     SHtml.ajaxCall(JE.JsRaw("""portMessage"""), (json: String) => {
       val portMessage = fromJson(json)
-      if (debug) log(s"receiveFromElm: " + describe(portMessage))
+      if (messageDebug) log(s"receiveFromElm: " + describe(portMessage))
       toLiftPort.receiveFromElm(portMessage)
       Js.nothing
     } )._2.cmd
   )
 
   private def log(message: String) {
-    if (debug) println(s"BELCH [$divId] $message")
+    println(s"BELCH [$divId] $message")
   }
 
   //TIP: this was useful - https://fmpwizard.telegr.am/blog/textile-and-lift
