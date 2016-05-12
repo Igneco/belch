@@ -69,7 +69,7 @@ s"""
   )
 
   private def log(message: String): Unit = {
-    if (debug) println(s"BELCH $embedVar -> $message")
+    if (debug) println(s"BELCH $divId -> $message")
   }
 
   //TIP: this was useful - https://fmpwizard.telegr.am/blog/textile-and-lift
