@@ -47,8 +47,8 @@ s"""
   private def generateMain =
     <script type="text/javascript">{
 s"""
-    ${generateLogger}
-    log('$description');
+    ${if (debug) generateLogger}
+    ${if (debug) "log('$description');"}
 
     var ${embedVar} = Elm.$elmModule.embed(document.getElementById('$divId'));
     ${sendToLiftSubscriber(toLiftPort)}
@@ -61,7 +61,7 @@ s"""
     case Some(port) =>
 s"""
     $embedVar.ports.${port.fqn(divId)}.subscribe(function(model) {
-      log('sendToLift: ' + model['typeName'] + ' -> ' + model['payload'] );
+      ${if (debug) "log('sendToLift: ' + model['typeName'] + ' -> ' + model['payload'] );"}
       var portMessage = JSON.stringify(model);
       $embedCallbackMethod(portMessage);
     });"""
