@@ -19,9 +19,8 @@ case class Belch(divId: String, elmModule: String,
   private val description = s"created with fromLiftPort: ${fromLiftPort.fqn(divId)}, toLiftPort: ${toLiftPort.fold("N/A")(_.fqn(divId))}"
 
   if (debug) log(description)
-  if (debug) log("\n" + generateMain.toString)
-  if (debug) log("\n" + generateCallback(PortMessage("typeName", "payload"), "json"))
-  if (debug) log("\n" + generateLogger)
+  if (debug) log("main:\n" + generateMain.toString)
+  if (debug) log("callback:\n" + generateCallback(PortMessage("typeName", "payload"), "json"))
 
   override def render = R(renderBridge, renderCallback).render
 
@@ -31,15 +30,14 @@ case class Belch(divId: String, elmModule: String,
     if (debug) log(s"sendToElm: " + describe(portMessage))
 
     //TODO: should probably escape any ' that might occur in the log message ..
-    JsRaw(
-      generateCallback(portMessage, json))
+    JsRaw(generateCallback(portMessage, json))
   }
 
   private def generateCallback(portMessage: PortMessage, json: String) =
 s"""
     ${if (debug) Seq(generateLogger, "log('receiveFromLift: ');").mkString("\n")}
     //log('receiveFromLift: ');
-    //log('receiveFromLift: ${portMessage.typeName} -> ${portMessage.payload}');
+    log('receiveFromLift: ${portMessage.typeName} -> ${portMessage.payload}');
     $embedVar.ports.${fromLiftPort.fqn(divId)}.send($json);
   """
 
