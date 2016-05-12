@@ -16,7 +16,7 @@ case class Belch(divId: String, elmModule: String,
 
   private val embedVar = s"_${divId}".replaceAll("-", "_").replaceAll("\\.", "_")
   private val embedCallbackMethod = s"${embedVar}Callback"
-  private val description = s"created with fromLiftPort: '${fromLiftPort.fqn(divId)}', toLiftPort: '${toLiftPort.fold("N/A")(_.fqn(divId))}'"
+  private val description = s"created with fromLiftPort: ${fromLiftPort.fqn(divId)}, toLiftPort: ${toLiftPort.fold("N/A")(_.fqn(divId))}"
 
   if (debug) log(description)
   if (debug) log("\n" + generateBridge.toString)
