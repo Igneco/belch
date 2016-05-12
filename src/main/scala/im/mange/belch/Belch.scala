@@ -19,7 +19,7 @@ case class Belch(divId: String, elmModule: String,
   private val description = s"created with fromLiftPort: ${fromLiftPort.fqn(divId)}, toLiftPort: ${toLiftPort.fold("N/A")(_.fqn(divId))}"
 
   if (debug) log(description)
-  if (debug) log("main:\n" + generateMain.toString)
+  if (debug) log("main:\n\n" + generateMain.toString + "\n")
   if (debug) log("callback:\n" + generateCallback(PortMessage("typeName", "payload"), "json"))
 
   override def render = R(renderBridge, renderCallback).render
@@ -34,8 +34,10 @@ case class Belch(divId: String, elmModule: String,
   }
 
   private def generateCallback(portMessage: PortMessage, json: String) =
-s"""   ${if (debug) Seq(generateLogger, s"    log('receiveFromLift: ${portMessage.typeName} -> ${portMessage.payload}');").mkString("\n")}
-    $embedVar.ports.${fromLiftPort.fqn(divId)}.send($json);"""
+s"""
+    ${if (debug) Seq(generateLogger, s"    log('receiveFromLift: ${portMessage.typeName} -> ${portMessage.payload}');").mkString("\n")}
+    $embedVar.ports.${fromLiftPort.fqn(divId)}.send($json);
+"""
 
   private def describe(portMessage: PortMessage) =
     s"${portMessage.typeName} -> ${portMessage.payload}"
