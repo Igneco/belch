@@ -23,12 +23,16 @@ case class Belch(divId: String, elmModule: String,
 
   override def render = R(renderBridge, renderCallback).render
 
+  //TODO: should have error handling around toJson
   def sendToElm(portMessage: PortMessage): JsCmd = {
-    val portMessageJson = toJson(portMessage)
-    if (debug) log(s"sendToElm ${fromLiftPort.fqn(divId)}: ${portMessage.typeName} -> ${portMessage.payload} = $portMessageJson")
+    val json = toJson(portMessage)
+    if (debug) log(s"sendToElm: " + describe(portMessage, json))
 
-    JsRaw(s"$embedVar.ports.${fromLiftPort.fqn(divId)}.send(" + portMessageJson + ");")
+    JsRaw(s"$embedVar.ports.${fromLiftPort.fqn(divId)}.send(" + json + ");")
   }
+
+  private def describe(portMessage: PortMessage, portMessageJson: String) =
+    s"${portMessage.typeName} -> ${portMessage.payload} = $portMessageJson"
 
   private def renderBridge = div(Some(divId), R(generateBridge))
 
@@ -59,10 +63,12 @@ s"""
     case None => R()
   }
 
+  //TODO: should have error handling around fromJson
   private def receiveFromElmCallback(toLiftPort: ToLiftPort) = Function(embedCallbackMethod, List("portMessage"),
     SHtml.ajaxCall(JE.JsRaw("""portMessage"""), (json: String) => {
-      if (debug) log(s"ajaxCallback ${toLiftPort.fqn(divId)} raw <- $json")
-      toLiftPort.receiveFromElm(fromJson(json))
+      val portMessage = fromJson(json)
+      if (debug) log(s"receiveFromElm: " + describe(portMessage, json))
+      toLiftPort.receiveFromElm(portMessage)
       Js.nothing
     } )._2.cmd
   )
