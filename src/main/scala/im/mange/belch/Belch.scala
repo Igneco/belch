@@ -30,8 +30,8 @@ case class Belch(divId: String, elmModule: String,
 
     JsRaw(
       s"""
-         log('receiveFromLift');
-         $embedVar.ports.${fromLiftPort.fqn(divId)}.send(" + json + ");
+         log('receiveFromLift: ' + portMessage);
+         $embedVar.ports.${fromLiftPort.fqn(divId)}.send("$json");
         """)
   }
 
@@ -56,6 +56,7 @@ s"""
 s"""
     $embedVar.ports.${port.fqn(divId)}.subscribe(function(model) {
       log('sendToLift: ' + model);
+      //log('sendToLift: ');
       var portMessage = JSON.stringify(model);
       $embedCallbackMethod(portMessage);
     });"""
