@@ -16,7 +16,7 @@ case class Belch(divId: String, elmModule: String,
 
   private val embedVar = s"_${divId}".replaceAll("-", "_").replaceAll("\\.", "_")
   private val embedCallbackMethod = s"${embedVar}_callback" //TODO: ultimately should include the toLiftPort.name
-  private val description = s"fromLiftPort: [${fromLiftPort.fqn(divId)}], toLiftPort: [${toLiftPort.fold("N/A")(_.name)}]"
+  private val description = s"fromLiftPort: [${fromLiftPort.fqn(divId)}], toLiftPort: [${toLiftPort.fold("N/A")(_.fqn(divId))}]"
 
   if (debug) log(description)
   if (debug) log("\n" + generateBridge.toString())
@@ -46,7 +46,7 @@ s"""
   private def receiveFromElmSubscriber(maybeToLiftPort: Option[ToLiftPort]) = maybeToLiftPort match {
     case Some(port) =>
 s"""
-    $embedVar.ports.${port.name}.subscribe(function(model) {
+    $embedVar.ports.${port.fqn(divId)}.subscribe(function(model) {
       var portMessage = JSON.stringify(model);
       log('subscribe receiveMessageFromElm: ' + portMessage);
       $embedCallbackMethod(portMessage);
@@ -61,7 +61,7 @@ s"""
 
   private def receiveFromElmCallback(toLiftPort: ToLiftPort) = Function(embedCallbackMethod, List("portMessage"),
     SHtml.ajaxCall(JE.JsRaw("""portMessage"""), (json: String) => {
-      if (debug) log(s"ajaxCallback ${toLiftPort.name} raw <- $json")
+      if (debug) log(s"ajaxCallback ${toLiftPort.fqn(divId)} raw <- $json")
       toLiftPort.receiveFromElm(fromJson(json))
       Js.nothing
     } )._2.cmd
