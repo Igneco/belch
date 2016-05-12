@@ -16,7 +16,7 @@ case class Belch(divId: String, elmModule: String,
 
   private val embedVar = s"_${divId}".replaceAll("-", "_").replaceAll("\\.", "_")
   private val embedCallbackMethod = s"${embedVar}Callback"
-  private val description = s"fromLiftPort: [${fromLiftPort.fqn(divId)}], toLiftPort: [${toLiftPort.fold("N/A")(_.fqn(divId))}]"
+  private val description = s"created with fromLiftPort: [${fromLiftPort.fqn(divId)}], toLiftPort: [${toLiftPort.fold("N/A")(_.fqn(divId))}]"
 
   if (debug) log(description)
   if (debug) log("\n" + generateBridge.toString())
@@ -32,14 +32,14 @@ case class Belch(divId: String, elmModule: String,
   }
 
   private def describe(portMessage: PortMessage, portMessageJson: String) =
-    s"${portMessage.typeName} -> ${portMessage.payload} = $portMessageJson"
+    s"${portMessage.typeName} -> ${portMessage.payload}"
 
   private def renderBridge = div(Some(divId), R(generateBridge))
 
   private def generateBridge =
     <script type="text/javascript">{
 s"""
-    function log(message) { if ($debug) console.log('BELCH: $divId -> ' + message); }
+    function log(message) { if ($debug) console.log('BELCH: [$divId] ' + message); }
     log('$description');
 
     var ${embedVar} = Elm.$elmModule.embed(document.getElementById('$divId'));
@@ -51,8 +51,8 @@ s"""
     case Some(port) =>
 s"""
     $embedVar.ports.${port.fqn(divId)}.subscribe(function(model) {
+      log('sendToLift: ' + model.typeName + " -> " + model.payload);
       var portMessage = JSON.stringify(model);
-      log('receiveFromElm: ' + portMessage);
       $embedCallbackMethod(portMessage);
     });"""
     case None => ""
@@ -74,7 +74,7 @@ s"""
   )
 
   private def log(message: String) {
-    if (debug) println(s"BELCH $divId -> $message")
+    if (debug) println(s"BELCH [$divId] $message")
   }
 
   //TIP: this was useful - https://fmpwizard.telegr.am/blog/textile-and-lift
