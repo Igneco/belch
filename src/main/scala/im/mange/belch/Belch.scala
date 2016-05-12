@@ -35,24 +35,23 @@ case class Belch(divId: String, elmModule: String,
 
   private def generateBridge =
     <script type="text/javascript">{
-    s"""
+s"""
     function log(message) { if ($debug) console.log('BELCH: $embedVar -> ' + message); }
     log('$description');
 
     var ${embedVar} = Elm.$elmModule.embed(document.getElementById('$divId'));
     ${messagesFromElmSubscriber(fromElmPort)}
-    """
+"""
     }</script>
 
   private def messagesFromElmSubscriber(maybeFromElmPort: Option[FromElmPort]) = maybeFromElmPort match {
     case Some(port) =>
-    s"""
+s"""
     $embedVar.ports.${port.name}.subscribe(function(model) {
       var portMessage = JSON.stringify(model);
       log('subscribe receiveMessageFromElm: ' + portMessage);
       $embedCallbackMethod(portMessage);
-    });
-    """
+    });"""
     case None => ""
   }
 
