@@ -51,7 +51,7 @@ s"""
 """
     }</script>
 
-  private def generateLogger = s"""function log(message) { if ($messageDebug) console.log('BELCH: [$divId] ' + JSON.parse(JSON.stringify(String(message)))); }"""
+  private def generateLogger = s"""function log(message) { console.log('BELCH: [$divId] ' + JSON.parse(JSON.stringify(String(message)))); }"""
 
   private def sendToLiftSubscriber(maybeToLiftPort: Option[ToLiftPort]) = maybeToLiftPort match {
     case Some(port) =>
