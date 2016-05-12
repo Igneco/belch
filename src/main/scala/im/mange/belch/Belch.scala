@@ -10,13 +10,13 @@ import Html._
 
 //TIP: BasicElmLiftCometHelper
 case class Belch(divId: String, elmModule: String,
-                 fromElmPort: Option[FromElmPort] = None,
+                 toLiftPort: Option[ToLiftPort] = None,
                  fromLiftPort: FromLiftPort = FromLiftPort(),
                  debug: Boolean = false) extends Renderable {
 
   private val embedVar = s"_${divId}".replaceAll("-", "_").replaceAll("\\.", "_")
-  private val embedCallbackMethod = s"${embedVar}_callback" //TODO: ultimately should include the fromElmPort.name
-  private val description = s"fromLiftPort: [${fromLiftPort.fqn(divId)}], fromElm: [${fromElmPort.fold("N/A")(_.name)}]"
+  private val embedCallbackMethod = s"${embedVar}_callback" //TODO: ultimately should include the toLiftPort.name
+  private val description = s"fromLiftPort: [${fromLiftPort.fqn(divId)}], toLiftPort: [${toLiftPort.fold("N/A")(_.name)}]"
 
   if (debug) log(description)
   if (debug) log("\n" + generateBridge.toString())
@@ -39,11 +39,11 @@ s"""
     log('$description');
 
     var ${embedVar} = Elm.$elmModule.embed(document.getElementById('$divId'));
-    ${receiveFromElmSubscriber(fromElmPort)}
+    ${receiveFromElmSubscriber(toLiftPort)}
 """
     }</script>
 
-  private def receiveFromElmSubscriber(maybeFromElmPort: Option[FromElmPort]) = maybeFromElmPort match {
+  private def receiveFromElmSubscriber(maybeToLiftPort: Option[ToLiftPort]) = maybeToLiftPort match {
     case Some(port) =>
 s"""
     $embedVar.ports.${port.name}.subscribe(function(model) {
@@ -54,20 +54,20 @@ s"""
     case None => ""
   }
 
-  private def renderCallback = fromElmPort match {
-    case Some(outgoingPort) => R(Script(receiveCallbackFromElm(outgoingPort)))
+  private def renderCallback = toLiftPort match {
+    case Some(outgoingPort) => R(Script(receiveFromElmCallback(outgoingPort)))
     case None => R()
   }
 
-  private def receiveCallbackFromElm(fromElmPort: FromElmPort) = Function(embedCallbackMethod, List("portMessage"),
+  private def receiveFromElmCallback(toLiftPort: ToLiftPort) = Function(embedCallbackMethod, List("portMessage"),
     SHtml.ajaxCall(JE.JsRaw("""portMessage"""), (json: String) => {
-      if (debug) log(s"ajaxCallback ${fromElmPort.name} raw <- $json")
-      fromElmPort.onMessageFromElm(fromJson(json))
+      if (debug) log(s"ajaxCallback ${toLiftPort.name} raw <- $json")
+      toLiftPort.receiveFromElm(fromJson(json))
       Js.nothing
     } )._2.cmd
   )
 
-  private def log(message: String): Unit = {
+  private def log(message: String) {
     if (debug) println(s"BELCH $divId -> $message")
   }
 
