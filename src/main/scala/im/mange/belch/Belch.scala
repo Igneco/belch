@@ -23,15 +23,12 @@ case class Belch(divId: String, elmModule: String,
   if (bridgeDebug) log("main:\n\n" + generateMain.toString + "\n")
   if (bridgeDebug) log("callback:\n" + generateCallback(PortMessage("typeName", "payload"), "json"))
 
-  override def render = R(renderBridge, renderCallback).render
+  override def render = R(renderMain, renderCallback).render
 
   //TODO: should have error handling around toJson
   def sendToElm(portMessage: PortMessage): JsCmd = {
-    val json = toJson(portMessage)
     if (messageDebug) log(s"sendToElm: " + describe(portMessage))
-
-    //TODO: should probably escape any ' that might occur in the log message ..
-    JsRaw(generateCallback(portMessage, json))
+    JsRaw(generateCallback(portMessage, toJson(portMessage)))
   }
 
   private def generateCallback(portMessage: PortMessage, json: String) =
@@ -40,17 +37,15 @@ s"""
     $embedVar.ports.${fromLiftPort.fqn(divId)}.send($json);
 """
 
-  private def describe(portMessage: PortMessage) =
-    s"${portMessage.typeName} -> ${portMessage.payload}"
+  private def describe(portMessage: PortMessage) = s"${portMessage.typeName} -> ${portMessage.payload}"
 
-  private def renderBridge = div(Some(divId), R(generateMain))
+  private def renderMain = div(Some(divId), R(generateMain))
 
   private def generateMain =
     <script type="text/javascript">{
 s"""
     ${if (messageDebug) generateLogger}
     ${if (messageDebug) "log('$description');"}
-
     var ${embedVar} = Elm.$elmModule.embed(document.getElementById('$divId'));
     ${sendToLiftSubscriber(toLiftPort)}
 """
