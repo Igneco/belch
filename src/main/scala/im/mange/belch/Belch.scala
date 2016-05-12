@@ -35,7 +35,7 @@ case class Belch(divId: String, elmModule: String,
   private def generateBridge =
     <script type="text/javascript">{
 s"""
-    function log(message) { if ($debug) console.log('BELCH: $embedVar -> ' + message); }
+    function log(message) { if ($debug) console.log('BELCH: $divId -> ' + message); }
     log('$description');
 
     var ${embedVar} = Elm.$elmModule.embed(document.getElementById('$divId'));
@@ -48,7 +48,7 @@ s"""
 s"""
     $embedVar.ports.${port.fqn(divId)}.subscribe(function(model) {
       var portMessage = JSON.stringify(model);
-      log('subscribe receiveMessageFromElm: ' + portMessage);
+      log('receiveFromElm: ' + portMessage);
       $embedCallbackMethod(portMessage);
     });"""
     case None => ""
