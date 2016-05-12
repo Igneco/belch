@@ -15,7 +15,7 @@ case class Belch(divId: String, elmModule: String,
                  debug: Boolean = false) extends Renderable {
 
   private val embedVar = s"_${divId}".replaceAll("-", "_").replaceAll("\\.", "_")
-  private val embedCallbackMethod = s"${embedVar}_callback" //TODO: ultimately should include the toLiftPort.name
+  private val embedCallbackMethod = s"${embedVar}Callback"
   private val description = s"fromLiftPort: [${fromLiftPort.fqn(divId)}], toLiftPort: [${toLiftPort.fold("N/A")(_.fqn(divId))}]"
 
   if (debug) log(description)
