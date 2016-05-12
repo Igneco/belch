@@ -34,7 +34,7 @@ case class Belch(divId: String, elmModule: String,
   }
 
   private def generateCallback(portMessage: PortMessage, json: String) =
-s"""   ${if (debug) Seq(generateLogger, "    log('receiveFromLift: ${portMessage.typeName} -> ${portMessage.payload}');").mkString("\n")}
+s"""   ${if (debug) Seq(generateLogger, s"    log('receiveFromLift: ${portMessage.typeName} -> ${portMessage.payload}');").mkString("\n")}
     $embedVar.ports.${fromLiftPort.fqn(divId)}.send($json);"""
 
   private def describe(portMessage: PortMessage) =
