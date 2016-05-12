@@ -46,13 +46,13 @@ case class Belch(divId: String, elmModule: String,
 
   private def messagesFromElmSubscriber(maybeFromElmPort: Option[FromElmPort]) = maybeFromElmPort match {
     case Some(port) =>
-      s"""
-      $embedVar.ports.${port.name}.subscribe(function(model) {
-        var portMessage = JSON.stringify(model);
-        log('subscribe receiveMessageFromElm: ' + portMessage);
-        $embedCallbackMethod(portMessage);
-      });
-        """
+    s"""
+    $embedVar.ports.${port.name}.subscribe(function(model) {
+      var portMessage = JSON.stringify(model);
+      log('subscribe receiveMessageFromElm: ' + portMessage);
+      $embedCallbackMethod(portMessage);
+    });
+    """
     case None => ""
   }
 
