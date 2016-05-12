@@ -20,7 +20,7 @@ case class Belch(divId: String, module: String,
   private val description = s"toElm: [${toElmPort.name}], fromElm: [${fromElmPort.fold("N/A")(_.name)}]"
 
   if (debug) log(description)
-  if (debug) log(generateBridge.toString())
+  if (debug) log("\n" + generateBridge.toString())
 
   override def render = R(renderBridge, renderCallback).render
 
@@ -34,24 +34,25 @@ case class Belch(divId: String, module: String,
   private def renderBridge = div(Some(divId), R(generateBridge))
 
   private def generateBridge =
-    <script type="text/javascript">
-      {s"""
-        function log(message) { if ($debug) console.log('BELCH: $embedVar -> ' + message); }
-        log('$description');
+    <script type="text/javascript">{
+    s"""
+    function log(message) { if ($debug) console.log('BELCH: $embedVar -> ' + message); }
+    log('$description');
 
-        var ${embedVar} = Elm.$module.embed(document.getElementById('$divId'));
-
-        ${messagesFromElmSubscriber(fromElmPort)}
-        """}
-    </script>
+    var ${embedVar} = Elm.$module.embed(document.getElementById('$divId'));
+    ${messagesFromElmSubscriber(fromElmPort)}
+    """
+    }</script>
 
   private def messagesFromElmSubscriber(maybeFromElmPort: Option[FromElmPort]) = maybeFromElmPort match {
-    case Some(port) => s"""
+    case Some(port) =>
+      s"""
       $embedVar.ports.${port.name}.subscribe(function(model) {
         var portMessage = JSON.stringify(model);
         log('subscribe receiveMessageFromElm: ' + portMessage);
         $embedCallbackMethod(portMessage);
-      });"""
+      });
+        """
     case None => ""
   }
 
