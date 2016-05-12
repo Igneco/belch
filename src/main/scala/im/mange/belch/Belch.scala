@@ -30,7 +30,8 @@ case class Belch(divId: String, elmModule: String,
 
     JsRaw(
       s"""
-         log('receiveFromLift: ${portMessage.typeName} -> ${portMessage.payload}');
+         log('receiveFromLift: ');
+         //log('receiveFromLift: ${portMessage.typeName} -> ${portMessage.payload}');
          $embedVar.ports.${fromLiftPort.fqn(divId)}.send($json);
         """)
   }
