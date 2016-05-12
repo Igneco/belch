@@ -19,8 +19,9 @@ case class Belch(divId: String, elmModule: String,
   private val description = s"created with fromLiftPort: ${fromLiftPort.fqn(divId)}, toLiftPort: ${toLiftPort.fold("N/A")(_.fqn(divId))}"
 
   if (debug) log(description)
-  if (debug) log("\n" + generateBridge.toString)
-  if (debug) log("\n" + generateThing(PortMessage("typeName", "payload"), "json").toString)
+  if (debug) log("\n" + generateMain.toString)
+  if (debug) log("\n" + generateCallback(PortMessage("typeName", "payload"), "json"))
+  if (debug) log("\n" + generateLogger)
 
   override def render = R(renderBridge, renderCallback).render
 
@@ -31,12 +32,12 @@ case class Belch(divId: String, elmModule: String,
 
     //TODO: should probably escape any ' that might occur in the log message ..
     JsRaw(
-      generateThing(portMessage, json))
+      generateCallback(portMessage, json))
   }
 
-  private def generateThing(portMessage: PortMessage, json: String) =
+  private def generateCallback(portMessage: PortMessage, json: String) =
 s"""
-    ${if (debug) Seq(loggerFunction, "log('receiveFromLift: ');").mkString("\n")}
+    ${if (debug) Seq(generateLogger, "log('receiveFromLift: ');").mkString("\n")}
     //log('receiveFromLift: ');
     //log('receiveFromLift: ${portMessage.typeName} -> ${portMessage.payload}');
     $embedVar.ports.${fromLiftPort.fqn(divId)}.send($json);
@@ -45,12 +46,12 @@ s"""
   private def describe(portMessage: PortMessage) =
     s"${portMessage.typeName} -> ${portMessage.payload}"
 
-  private def renderBridge = div(Some(divId), R(generateBridge))
+  private def renderBridge = div(Some(divId), R(generateMain))
 
-  private def generateBridge =
+  private def generateMain =
     <script type="text/javascript">{
 s"""
-    ${loggerFunction}
+    ${generateLogger}
     log('$description');
 
     var ${embedVar} = Elm.$elmModule.embed(document.getElementById('$divId'));
@@ -58,7 +59,7 @@ s"""
 """
     }</script>
 
-  private def loggerFunction = s"""function log(message) { if ($debug) console.log('BELCH: [$divId] ' + message); }"""
+  private def generateLogger = s"""function log(message) { if ($debug) console.log('BELCH: [$divId] ' + JSON.stringify(String(message))); }"""
 
   private def sendToLiftSubscriber(maybeToLiftPort: Option[ToLiftPort]) = maybeToLiftPort match {
     case Some(port) =>
