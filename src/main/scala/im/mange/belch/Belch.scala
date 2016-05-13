@@ -33,7 +33,7 @@ case class Belch(divId: String, elmModule: String,
 
   private def generateCallback(portMessage: PortMessage, json: String) =
 s"""
-    ${if (messageDebug) Seq(generateLogger, s"    log('receiveFromLift: ${portMessage.typeName} -> ${portMessage.payload}');").mkString("\n")}
+    ${if (messageDebug) Seq(generateLogger, s"    log('receiveFromLift: ${portMessage.typeName} -> ${portMessage.payload}');").mkString("\n") else ""}
     $embedVar.ports.${fromLiftPort.fqn(divId)}.send($json);
 """
 
@@ -44,8 +44,8 @@ s"""
   private def generateMain =
     <script type="text/javascript">{
 s"""
-    ${if (messageDebug) generateLogger}
-    ${if (messageDebug) s"log('$description');"}
+    ${if (messageDebug) generateLogger else ""}
+    ${if (messageDebug) s"log('$description');" else ""}
     var ${embedVar} = Elm.$elmModule.embed(document.getElementById('$divId'));
     ${sendToLiftSubscriber(toLiftPort)}
 """
@@ -57,7 +57,7 @@ s"""
     case Some(port) =>
 s"""
     $embedVar.ports.${port.fqn(divId)}.subscribe(function(model) {
-      ${if (messageDebug) "log('sendToLift: ' + model['typeName'] + ' -> ' + model['payload'] );"}
+      ${if (messageDebug) "log('sendToLift: ' + model['typeName'] + ' -> ' + model['payload'] );" else ""}
       var portMessage = JSON.stringify(model);
       $embedCallbackMethod(portMessage);
     });"""
