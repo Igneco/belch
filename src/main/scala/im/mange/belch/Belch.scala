@@ -45,7 +45,7 @@ s"""
     <script type="text/javascript">{
 s"""
     ${if (messageDebug) generateLogger}
-    ${if (messageDebug) "log('$description');"}
+    ${if (messageDebug) s"log('$description');"}
     var ${embedVar} = Elm.$elmModule.embed(document.getElementById('$divId'));
     ${sendToLiftSubscriber(toLiftPort)}
 """
